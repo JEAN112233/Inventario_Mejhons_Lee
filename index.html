@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | Sistema de Ventas</title>
+
+  <!-- Firebase v4 -->
+  <script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.12.1/firebase-auth.js"></script>
+
+  <style>
+    body {
+      background: linear-gradient(to right, #dbe6f6, #c5796d);
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .logo {
+      width: 150px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background-color: #003366;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #00509e;
+    }
+
+    #status {
+      margin-top: 12px;
+      font-weight: bold;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <img src="../img/logo.png" alt="Logo de empresa" class="logo">
+
+    <h2>Registro</h2>
+    <input type="email" id="registerEmail" placeholder="Correo">
+    <input type="password" id="registerPassword" placeholder="Contraseña">
+    <button onclick="register()">Registrarse</button>
+
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Correo">
+    <input type="password" id="loginPassword" placeholder="Contraseña">
+    <button onclick="login()">Iniciar Sesión</button>
+
+    <h2>Estado</h2>
+    <p id="status">No autenticado</p>
+    <button onclick="cerrarSesion()">Cerrar Sesión</button>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMHH7tdFm5EpZazWSe604_05UH_ljszGI",
+      authDomain: "bitel-247cf.firebaseapp.com",
+      projectId: "bitel-247cf",
+      storageBucket: "bitel-247cf.appspot.com",
+      messagingSenderId: "773176941580",
+      appId: "1:773176941580:web:739f17fddfa421fd4b6229"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function register() {
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          alert('Usuario registrado');
+        })
+        .catch(error => {
+          alert('Error: ' + error.message);
+        });
+    }
+
+    function login() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          alert('Sesión iniciada');
+          window.location.href = "homepage.html"; // ✅ redirige al homepage
+        })
+        .catch(error => {
+          alert('Error: ' + error.message);
+        });
+    }
+
+    function cerrarSesion() {
+      auth.signOut()
+        .then(() => {
+          alert('Sesión finalizada');
+        })
+        .catch(error => {
+          alert('Error: ' + error.message);
+        });
+    }
+
+    auth.onAuthStateChanged(user => {
+      const status = document.getElementById('status');
+      if (user) {
+        status.textContent = 'Usuario Activo: ' + user.email;
+        console.log("Sesión iniciada");
+      } else {
+        status.textContent = 'Usuario Inactivo';
+        console.log("No hay sesión iniciada");
+      }
+    });
+  </script>
+
+</body>
+</html>

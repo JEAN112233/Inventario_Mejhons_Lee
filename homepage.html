@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Homepage | Sistema de Inventario</title>
+  <link rel="stylesheet" href="../css/stylepag.css" />
+  <style>
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 8px 14px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .logout-btn:hover {
+      background-color: #c0392b;
+    }
+    header {
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <header>
+    <h2>Sistema de Inventario</h2>
+    <nav>
+      <a href="productos.html">Productos</a>
+    </nav>
+    <button class="logout-btn" id="cerrarSesionBtn">Cerrar sesión</button>
+  </header>
+
+  <!-- Contenido principal -->
+  <main>
+    <section class="bienvenida">
+      <h1>Bienvenido</h1>
+      <p>Selecciona una opción para comenzar:</p>
+    </section>
+  </main>
+
+  <!-- Script de bienvenida + cerrar sesión -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    // ✅ Configuración real de tu proyecto Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMHH7tdFm5EpZazWSe604_05UH_ljszGI",
+      authDomain: "bitel-247cf.firebaseapp.com",
+      projectId: "bitel-247cf",
+      storageBucket: "bitel-247cf.appspot.com",
+      messagingSenderId: "773176941580",
+      appId: "1:773176941580:web:739f17fddfa421fd4b6229"
+    };
+
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Evento para cerrar sesión
+    document.getElementById("cerrarSesionBtn").addEventListener("click", () => {
+      signOut(auth).then(() => {
+        alert("Sesión cerrada correctamente.");
+        window.location.href = "index.html"; // Redirige al login
+      }).catch((error) => {
+        console.error("Error al cerrar sesión:", error);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Productos | Gestión</title>
+  <link rel="stylesheet" href="../css/stylepag.css" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+      width: 100%;
+      max-width: 1100px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .back-btn:hover {
+      background: #0056b3;
+    }
+
+    h1 {
+      text-align: center;
+      color: #003366;
+      margin-bottom: 25px;
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    form input, form select {
+      flex: 1 1 200px;
+      padding: 10px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    form button {
+      flex: 1 1 150px;
+      padding: 10px;
+      font-weight: bold;
+      font-size: 15px;
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background: #218838;
+    }
+
+    #msg {
+      text-align: center;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #28a745;
+    }
+
+    #buscar {
+      margin-bottom: 15px;
+      padding: 8px;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    th {
+      background: #28a745;
+      color: #fff;
+    }
+
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+
+    td input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+    }
+
+    td input:focus {
+      outline: 1px solid #003366;
+      border-radius: 4px;
+    }
+
+    .btn {
+      padding: 4px 8px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .save {
+      background: #007bff;
+      color: #fff;
+    }
+
+    .delete {
+      background: #dc3545;
+      color: #fff;
+      margin-left: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <button class="back-btn" onclick="window.location.href='homepage.html'">◀️ Volver</button>
+    <h1>Gestión de Productos</h1>
+
+    <form id="formProducto">
+      <input id="cod_producto" placeholder="Código producto" required />
+      <input id="Marca" placeholder="Marca" required />
+      <input id="Descripción" placeholder="Descripción" required />
+      <input id="stock" placeholder="Stock" type="number" required />
+      <select id="cod_inventario" required>
+        <option value="">Seleccionar Inventario</option>
+        <option value="Inventario Tienda">Tienda</option>
+        <option value="Inventario Cabaña">Cabaña</option>
+        <option value="Inventario Terreno">Terreno</option>
+      </select>
+      <button type="submit">Registrar</button>
+    </form>
+
+    <div id="msg"></div>
+
+    <input
+      type="text"
+      id="buscar"
+      placeholder="Buscar productos por código, marca o descripción..."
+    />
+
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Marca</th>
+          <th>Descripción</th>
+          <th>Stock</th>
+          <th>Ubicacion¡¡</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+    import {
+      getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, updateDoc
+    } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+
+    // --- Config Firebase ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMHH7tdFm5EpZazWSe604_05UH_ljszGI",
+      authDomain: "bitel-247cf.firebaseapp.com",
+      projectId: "bitel-247cf",
+      storageBucket: "bitel-247cf.appspot.com",
+      messagingSenderId: "773176941580",
+      appId: "1:773176941580:web:4c219da54d05f14f4b6229"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- Referencias DOM ---
+    const form = document.getElementById('formProducto');
+    const msg = document.getElementById('msg');
+    const tbody = document.getElementById('tbody');
+
+    let editandoId = null;
+
+    // --- Registrar o actualizar producto ---
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const producto = {
+        cod_producto: form.cod_producto.value,
+        nombre: form.Marca.value,
+        descripcion: form.Descripción.value,
+        stock: parseInt(form.stock.value),
+        cod_inventario: form.cod_inventario.value
+      };
+
+      try {
+        if (editandoId) {
+          await updateDoc(doc(db, 'productos', editandoId), producto);
+          msg.textContent = '✅ Producto actualizado';
+          editandoId = null;
+        } else {
+          await addDoc(collection(db, 'productos'), producto);
+          msg.textContent = '✅ Producto registrado';
+        }
+        form.reset();
+      } catch (error) {
+        msg.textContent = '❌ Error al guardar';
+        console.error(error);
+      }
+
+      setTimeout(() => msg.textContent = '', 2000);
+    });
+
+    // --- Mostrar productos en la tabla ---
+    function listarProductos() {
+      onSnapshot(collection(db, 'productos'), (snapshot) => {
+        tbody.innerHTML = '';
+        snapshot.forEach((docu) => {
+          const data = docu.data();
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><input value="${data.cod_producto || ''}" data-field="cod_producto" data-id="${docu.id}" /></td>
+            <td><input value="${data.nombre || ''}" data-field="nombre" data-id="${docu.id}" /></td>
+            <td><input value="${data.descripcion || ''}" data-field="descripcion" data-id="${docu.id}" /></td>
+            <td><input value="${data.stock || 0}" data-field="stock" data-id="${docu.id}" type="number" /></td>
+            <td><input value="${data.cod_inventario || ''}" data-field="cod_inventario" data-id="${docu.id}" /></td>
+            <td>
+              <button class="btn save" data-id="${docu.id}">💾</button>
+              <button class="btn delete" data-id="${docu.id}">🗑️</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Botón Eliminar
+        document.querySelectorAll('.delete').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            await deleteDoc(doc(db, 'productos', btn.dataset.id));
+            msg.textContent = '🗑️ Producto eliminado';
+            setTimeout(() => msg.textContent = '', 2000);
+          });
+        });
+
+        // Botón Guardar
+        document.querySelectorAll('.save').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const inputs = document.querySelectorAll(`input[data-id="${id}"]`);
+            const nuevoProducto = {};
+            inputs.forEach(input => {
+              let value = input.value;
+              if (input.type === 'number') {
+                value = parseFloat(value);
+              }
+              nuevoProducto[input.dataset.field] = value;
+            });
+            await updateDoc(doc(db, 'productos', id), nuevoProducto);
+            msg.textContent = '✅ Producto actualizado';
+            setTimeout(() => msg.textContent = '', 2000);
+          });
+        });
+      });
+    }
+
+    listarProductos();
+
+    // --- Filtrar tabla según búsqueda (corrigiendo para inputs) ---
+    document.getElementById('buscar').addEventListener('input', function () {
+      const filtro = this.value.toLowerCase();
+      const filas = document.querySelectorAll('#tbody tr');
+
+      filas.forEach(fila => {
+        const codigo = fila.cells[0].querySelector('input').value.toLowerCase();
+        const marca = fila.cells[1].querySelector('input').value.toLowerCase();
+        const descripcion = fila.cells[2].querySelector('input').value.toLowerCase();
+
+        if (
+          codigo.includes(filtro) ||
+          marca.includes(filtro) ||
+          descripcion.includes(filtro)
+        ) {
+          fila.style.display = '';
+        } else {
+          fila.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
