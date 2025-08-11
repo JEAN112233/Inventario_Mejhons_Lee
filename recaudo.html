@@ -88,13 +88,26 @@
       background-color: #e53935;
       color: white;
     }
+    /* ✅ Estilos para el botón de retroceso */
+    .back-btn {
+      background-color: #003366;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+    .back-btn:hover {
+      background-color: #00509e;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-<div class="card">
-<button class="back-btn" onclick="window.location.href='homepage.html'">◀️ Volver</button>
+  <button class="back-btn" onclick="window.location.href='homepage.html'">◀️ Volver</button>
   <h1>Recaudo de Clientes</h1>
 
   <form id="recaudoForm">
