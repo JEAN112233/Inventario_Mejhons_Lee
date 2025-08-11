@@ -162,7 +162,7 @@
       <input id="cod_producto" placeholder="Código producto" required />
       <input id="Marca" placeholder="Marca" required />
       <input id="Descripción" placeholder="Descripción" required />
-      <input id="stock" placeholder="Stock" type="Stock" required />
+      <input id="stock" placeholder="Stock" type="text" required />
       <select id="cod_inventario" required>
         <option value="">Seleccionar Inventario</option>
         <option value="Inventario Tienda">Tienda</option>
@@ -187,7 +187,7 @@
           <th>Marca</th>
           <th>Descripción</th>
           <th>Stock</th>
-          <th>Ubicacion</th>
+          <th>Ubicación</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -198,7 +198,7 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
     import {
-      getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, updateDoc
+      getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, updateDoc
     } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
     // --- Config Firebase ---
@@ -214,14 +214,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- Referencias DOM ---
     const form = document.getElementById('formProducto');
     const msg = document.getElementById('msg');
     const tbody = document.getElementById('tbody');
 
     let editandoId = null;
 
-    // --- Registrar o actualizar producto ---
+    // Registrar o actualizar producto
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -229,7 +228,7 @@
         cod_producto: form.cod_producto.value,
         nombre: form.Marca.value,
         descripcion: form.Descripción.value,
-        stock: parseInt(form.stock.value),
+        stock: form.stock.value, // ahora texto libre
         cod_inventario: form.cod_inventario.value
       };
 
@@ -251,7 +250,7 @@
       setTimeout(() => msg.textContent = '', 2000);
     });
 
-    // --- Mostrar productos en la tabla ---
+    // Mostrar productos en la tabla
     function listarProductos() {
       onSnapshot(collection(db, 'productos'), (snapshot) => {
         tbody.innerHTML = '';
@@ -262,7 +261,7 @@
             <td><input value="${data.cod_producto || ''}" data-field="cod_producto" data-id="${docu.id}" /></td>
             <td><input value="${data.nombre || ''}" data-field="nombre" data-id="${docu.id}" /></td>
             <td><input value="${data.descripcion || ''}" data-field="descripcion" data-id="${docu.id}" /></td>
-            <td><input value="${data.stock || 0}" data-field="stock" data-id="${docu.id}" type="stock" /></td>
+            <td><input value="${data.stock || ''}" data-field="stock" data-id="${docu.id}" type="text" /></td>
             <td><input value="${data.cod_inventario || ''}" data-field="cod_inventario" data-id="${docu.id}" /></td>
             <td>
               <button class="btn save" data-id="${docu.id}">💾</button>
@@ -288,11 +287,7 @@
             const inputs = document.querySelectorAll(`input[data-id="${id}"]`);
             const nuevoProducto = {};
             inputs.forEach(input => {
-              let value = input.value;
-              if (input.type === 'stock') {
-                value = parseFloat(value);
-              }
-              nuevoProducto[input.dataset.field] = value;
+              nuevoProducto[input.dataset.field] = input.value;
             });
             await updateDoc(doc(db, 'productos', id), nuevoProducto);
             msg.textContent = '✅ Producto actualizado';
@@ -304,7 +299,7 @@
 
     listarProductos();
 
-    // --- Filtrar tabla según búsqueda (corrigiendo para inputs) ---
+    // Filtro de búsqueda
     document.getElementById('buscar').addEventListener('input', function () {
       const filtro = this.value.toLowerCase();
       const filas = document.querySelectorAll('#tbody tr');
@@ -328,7 +323,3 @@
   </script>
 </body>
 </html>
-
-
-
-
