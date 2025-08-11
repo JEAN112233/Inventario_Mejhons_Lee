@@ -289,7 +289,7 @@
             const nuevoProducto = {};
             inputs.forEach(input => {
               let value = input.value;
-              if (input.type === 'number') {
+              if (input.type === 'stock') {
                 value = parseFloat(value);
               }
               nuevoProducto[input.dataset.field] = value;
@@ -328,5 +328,6 @@
   </script>
 </body>
 </html>
+
 
 
