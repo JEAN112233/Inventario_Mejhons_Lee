@@ -2,9 +2,57 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Homepage | Sistema de Inventario</title>
+  <title>Homepage | Sistema </title>
   <link rel="stylesheet" href="../css/stylepag.css" />
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url("../img/logo_empresa.png") no-repeat center center fixed;
+      background-size: 300px;
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px 0 10px 0;
+    }
+
+    header h2 {
+      margin: 0;
+      font-size: 2rem;
+      color: black;
+    }
+
+    nav {
+      margin-top: 10px;
+    }
+
+    nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: black;
+      font-weight: bold;
+      font-size: 1.1rem;
+      border-bottom: 2px solid transparent;
+      padding-bottom: 3px;
+      transition: border-color 0.3s;
+    }
+
+    nav a:hover {
+      border-color: #003366;
+    }
+
     .logout-btn {
       position: absolute;
       top: 20px;
@@ -17,18 +65,30 @@
       cursor: pointer;
       font-weight: bold;
     }
+
     .logout-btn:hover {
       background-color: #c0392b;
     }
-    header {
-      position: relative;
+
+    main {
+      text-align: center;
+      padding: 50px;
+    }
+
+    .bienvenida h1 {
+      font-size: 2.2rem;
+      color: #003366;
+    }
+
+    .bienvenida p {
+      font-size: 1.2rem;
+      color: #444;
     }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
   <header>
-    <h2>Sistema de Inventario</h2>
+    <h2>Sistema Mejhons.Lee </h2>
     <nav>
       <a href="productos.html">Productos</a>
       <a href="recaudo.html">Recaudo</a>
@@ -36,7 +96,6 @@
     <button class="logout-btn" id="cerrarSesionBtn">Cerrar sesión</button>
   </header>
 
-  <!-- Contenido principal -->
   <main>
     <section class="bienvenida">
       <h1>Bienvenido</h1>
@@ -44,12 +103,10 @@
     </section>
   </main>
 
-  <!-- Script de bienvenida + cerrar sesión -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    // ✅ Configuración real de tu proyecto Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBMHH7tdFm5EpZazWSe604_05UH_ljszGI",
       authDomain: "bitel-247cf.firebaseapp.com",
@@ -59,20 +116,17 @@
       appId: "1:773176941580:web:739f17fddfa421fd4b6229"
     };
 
-    // Inicializar Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Evento para cerrar sesión
     document.getElementById("cerrarSesionBtn").addEventListener("click", () => {
       signOut(auth).then(() => {
         alert("Sesión cerrada correctamente.");
-        window.location.href = "index.html"; // Redirige al login
+        window.location.href = "index.html";
       }).catch((error) => {
         console.error("Error al cerrar sesión:", error);
       });
     });
   </script>
 </body>
-
 </html>
