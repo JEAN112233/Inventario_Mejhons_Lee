@@ -69,7 +69,7 @@ function listarProductos() {
         <td><input value="${data.descripcion}" data-field="descripcion" data-id="${docu.id}" /></td>
         <td><input value="${data.unid_medida}" data-field="unid_medida" data-id="${docu.id}" /></td>
         <td><input value="${data.precio}" data-field="precio" data-id="${docu.id}" type="number" /></td>
-        <td><input value="${data.stock}" data-field="stock" data-id="${docu.id}" type="number" /></td>
+        <td><input value="${data.stock}" data-field="stock" data-id="${docu.id}" type="stock" /></td>
         <td><input value="${data.idcategoria}" data-field="idcategoria" data-id="${docu.id}" /></td>
         <td><input value="${data.cod_inventario}" data-field="cod_inventario" data-id="${docu.id}" /></td>
         <td>
@@ -97,7 +97,7 @@ function listarProductos() {
         const nuevoProducto = {};
         inputs.forEach(input => {
           let value = input.value;
-          if (input.type === 'number') {
+          if (input.type === 'stock') {
             value = parseFloat(value);
           }
           nuevoProducto[input.dataset.field] = value;
@@ -109,5 +109,6 @@ function listarProductos() {
     });
   });
 }
+
 
 listarProductos();
