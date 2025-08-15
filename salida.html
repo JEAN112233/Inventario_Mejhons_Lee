@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Salida de Productos</title>
+  <link rel="stylesheet" href="../css/stylepag.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #c82333;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+    button {
+      background: #dc3545;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #b02a37;
+    }
+    #msg {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    #datosProducto {
+      text-align: left;
+      font-size: 14px;
+      background: #f9f9f9;
+      padding: 8px;
+      border-radius: 6px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <button onclick="window.location.href='homepage.html'" style="background:#007bff;margin-bottom:15px">◀️ Volver</button>
+    <h1>Salida de Productos</h1>
+
+    <input type="text" id="codigoProducto" placeholder="Código del producto" required />
+    <div id="datosProducto"></div>
+    <input type="number" id="cantidadSalida" placeholder="Cantidad a descontar" min="1" required />
+    <button id="btnSalida">Registrar Salida</button>
+    <div id="msg"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+    import {
+      getFirestore, collection, query, where, getDocs, updateDoc, addDoc, doc
+    } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+
+    // Config Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMHH7tdFm5EpZazWSe604_05UH_ljszGI",
+      authDomain: "bitel-247cf.firebaseapp.com",
+      projectId: "bitel-247cf",
+      storageBucket: "bitel-247cf.appspot.com",
+      messagingSenderId: "773176941580",
+      appId: "1:773176941580:web:4c219da54d05f14f4b6229"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const codigoProducto = document.getElementById('codigoProducto');
+    const datosProducto = document.getElementById('datosProducto');
+    const cantidadSalida = document.getElementById('cantidadSalida');
+    const btnSalida = document.getElementById('btnSalida');
+    const msg = document.getElementById('msg');
+
+    let productoEncontrado = null;
+
+    // Buscar producto en tiempo real al escribir código
+    codigoProducto.addEventListener('input', async () => {
+      const codigo = codigoProducto.value.trim();
+      if (codigo === "") {
+        datosProducto.style.display = "none";
+        productoEncontrado = null;
+        return;
+      }
+
+      const q = query(collection(db, 'productos'), where('cod_producto', '==', codigo));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const docu = querySnapshot.docs[0];
+        productoEncontrado = { id: docu.id, ...docu.data() };
+        datosProducto.style.display = "block";
+        datosProducto.innerHTML = `
+          <strong>Marca:</strong> ${productoEncontrado.nombre} <br>
+          <strong>Descripción:</strong> ${productoEncontrado.descripcion} <br>
+          <strong>Stock actual:</strong> ${productoEncontrado.stock} <br>
+          <strong>Ubicación:</strong> ${productoEncontrado.cod_inventario}
+        `;
+      } else {
+        datosProducto.style.display = "block";
+        datosProducto.innerHTML = `<span style="color:red">❌ Producto no encontrado</span>`;
+        productoEncontrado = null;
+      }
+    });
+
+    // Registrar salida
+    btnSalida.addEventListener('click', async () => {
+      if (!productoEncontrado) {
+        msg.style.color = 'red';
+        msg.textContent = '⚠️ Ingresa un código válido';
+        return;
+      }
+
+      const cantidad = parseInt(cantidadSalida.value);
+      const stockActual = parseInt(productoEncontrado.stock);
+
+      if (isNaN(cantidad) || cantidad <= 0) {
+        msg.style.color = 'red';
+        msg.textContent = '⚠️ Ingresa una cantidad válida';
+        return;
+      }
+      if (cantidad > stockActual) {
+        msg.style.color = 'red';
+        msg.textContent = '❌ Stock insuficiente';
+        return;
+      }
+
+      try {
+        // Actualizar stock
+        await updateDoc(doc(db, 'productos', productoEncontrado.id), {
+          stock: stockActual - cantidad
+        });
+
+        // Registrar salida en historial
+        await addDoc(collection(db, 'salidas'), {
+          cod_producto: productoEncontrado.cod_producto,
+          nombre: productoEncontrado.nombre,
+          cantidad: cantidad,
+          fecha: new Date().toISOString()
+        });
+
+        msg.style.color = 'green';
+        msg.textContent = '✅ Salida registrada y stock actualizado';
+        cantidadSalida.value = '';
+        codigoProducto.value = '';
+        datosProducto.style.display = 'none';
+        productoEncontrado = null;
+      } catch (err) {
+        console.error(err);
+        msg.style.color = 'red';
+        msg.textContent = '❌ Error al registrar salida';
+      }
+    });
+  </script>
+</body>
+</html>
