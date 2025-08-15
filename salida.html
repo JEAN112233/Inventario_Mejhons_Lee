@@ -56,6 +56,10 @@
       border-radius: 6px;
       display: none;
     }
+    .agotado {
+      color: red;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -76,7 +80,6 @@
       getFirestore, collection, query, where, getDocs, updateDoc, addDoc, doc
     } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
-    // Config Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBMHH7tdFm5EpZazWSe604_05UH_ljszGI",
       authDomain: "bitel-247cf.firebaseapp.com",
@@ -97,7 +100,6 @@
 
     let productoEncontrado = null;
 
-    // Buscar producto en tiempo real al escribir código
     codigoProducto.addEventListener('input', async () => {
       const codigo = codigoProducto.value.trim();
       if (codigo === "") {
@@ -112,11 +114,16 @@
       if (!querySnapshot.empty) {
         const docu = querySnapshot.docs[0];
         productoEncontrado = { id: docu.id, ...docu.data() };
+
+        let stockTexto = productoEncontrado.stock === 0 
+          ? `<span class="agotado">AGOTADO</span>` 
+          : productoEncontrado.stock;
+
         datosProducto.style.display = "block";
         datosProducto.innerHTML = `
           <strong>Marca:</strong> ${productoEncontrado.nombre} <br>
           <strong>Descripción:</strong> ${productoEncontrado.descripcion} <br>
-          <strong>Stock actual:</strong> ${productoEncontrado.stock} <br>
+          <strong>Stock actual:</strong> ${stockTexto} <br>
           <strong>Ubicación:</strong> ${productoEncontrado.cod_inventario}
         `;
       } else {
@@ -126,7 +133,6 @@
       }
     });
 
-    // Registrar salida
     btnSalida.addEventListener('click', async () => {
       if (!productoEncontrado) {
         msg.style.color = 'red';
@@ -149,12 +155,12 @@
       }
 
       try {
-        // Actualizar stock
+        const nuevoStock = stockActual - cantidad;
+
         await updateDoc(doc(db, 'productos', productoEncontrado.id), {
-          stock: stockActual - cantidad
+          stock: nuevoStock
         });
 
-        // Registrar salida en historial
         await addDoc(collection(db, 'salidas'), {
           cod_producto: productoEncontrado.cod_producto,
           nombre: productoEncontrado.nombre,
@@ -163,9 +169,13 @@
         });
 
         msg.style.color = 'green';
-        msg.textContent = '✅ Salida registrada y stock actualizado';
+        msg.textContent = nuevoStock === 0 
+          ? '✅ Salida registrada. Producto AGOTADO'
+          : '✅ Salida registrada y stock actualizado';
+
         cantidadSalida.value = '';
         codigoProducto.value = '';
+        datosProducto.innerHTML = '';
         datosProducto.style.display = 'none';
         productoEncontrado = null;
       } catch (err) {
