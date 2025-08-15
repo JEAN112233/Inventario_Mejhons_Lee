@@ -14,7 +14,6 @@
       align-items: center;
       justify-content: center;
     }
-
     .card {
       background: #fff;
       padding: 30px 40px;
@@ -26,7 +25,6 @@
       display: flex;
       flex-direction: column;
     }
-
     .back-btn {
       position: absolute;
       top: 20px;
@@ -39,120 +37,43 @@
       cursor: pointer;
       font-size: 16px;
     }
-
-    .back-btn:hover {
-      background: #0056b3;
-    }
-
-    h1 {
-      text-align: center;
-      color: #003366;
-      margin-bottom: 25px;
-    }
-
+    .back-btn:hover { background: #0056b3; }
+    h1 { text-align: center; color: #003366; margin-bottom: 25px; }
     form {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
-      justify-content: center;
+      display: flex; flex-wrap: wrap; gap: 10px;
+      margin-bottom: 20px; justify-content: center;
     }
-
     form input, form select {
-      flex: 1 1 200px;
-      padding: 10px;
-      font-size: 15px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      flex: 1 1 200px; padding: 10px; font-size: 15px;
+      border: 1px solid #ccc; border-radius: 6px;
     }
-
     form button {
-      flex: 1 1 150px;
-      padding: 10px;
-      font-weight: bold;
-      font-size: 15px;
-      background: #28a745;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+      flex: 1 1 150px; padding: 10px; font-weight: bold;
+      font-size: 15px; background: #28a745; color: #fff;
+      border: none; border-radius: 6px; cursor: pointer;
     }
-
-    form button:hover {
-      background: #218838;
-    }
-
-    #msg {
-      text-align: center;
-      margin-bottom: 10px;
-      font-weight: bold;
-      color: #28a745;
-    }
-
+    form button:hover { background: #218838; }
+    #msg { text-align: center; margin-bottom: 10px; font-weight: bold; }
     #buscar {
-      margin-bottom: 15px;
-      padding: 8px;
-      width: 100%;
-      max-width: 400px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 15px;
+      margin-bottom: 15px; padding: 8px; width: 100%;
+      max-width: 400px; border-radius: 6px; border: 1px solid #ccc; font-size: 15px;
     }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
+    table { width: 100%; border-collapse: collapse; }
     th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-      font-size: 14px;
+      border: 1px solid #ccc; padding: 8px; text-align: center; font-size: 14px;
     }
-
-    th {
-      background: #28a745;
-      color: #fff;
-    }
-
-    tr:nth-child(even) {
-      background: #f9f9f9;
-    }
-
+    th { background: #28a745; color: #fff; }
+    tr:nth-child(even) { background: #f9f9f9; }
     td input {
-      width: 100%;
-      border: none;
-      background: transparent;
-      text-align: center;
+      width: 100%; border: none; background: transparent; text-align: center;
     }
-
-    td input:focus {
-      outline: 1px solid #003366;
-      border-radius: 4px;
-    }
-
-    .btn {
-      padding: 4px 8px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .save {
-      background: #007bff;
-      color: #fff;
-    }
-
-    .delete {
-      background: #dc3545;
-      color: #fff;
-      margin-left: 4px;
-    }
+    td input:focus { outline: 1px solid #003366; border-radius: 4px; }
+    .btn { padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .save { background: #007bff; color: #fff; }
+    .delete { background: #dc3545; color: #fff; margin-left: 4px; }
+    .agotado { color: red; font-weight: bold; }
   </style>
 </head>
-
 <body>
   <div class="card">
     <button class="back-btn" onclick="window.location.href='homepage.html'">◀️ Volver</button>
@@ -162,7 +83,7 @@
       <input id="cod_producto" placeholder="Código producto" required />
       <input id="Marca" placeholder="Marca" required />
       <input id="Descripción" placeholder="Descripción" required />
-      <input id="stock" placeholder="Stock" type="number" required />
+      <input id="stock" placeholder="Stock" type="number" min="0" required />
       <select id="cod_inventario" required>
         <option value="">Seleccionar Inventario</option>
         <option value="Inventario Tienda">Tienda</option>
@@ -174,11 +95,7 @@
 
     <div id="msg"></div>
 
-    <input
-      type="text"
-      id="buscar"
-      placeholder="Buscar productos por código, marca o descripción..."
-    />
+    <input type="text" id="buscar" placeholder="Buscar productos por código, marca o descripción..." />
 
     <table>
       <thead>
@@ -197,11 +114,9 @@
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-    import {
-      getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, updateDoc
-    } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+    import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
-    // --- Config Firebase ---
+    // Config Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBMHH7tdFm5EpZazWSe604_05UH_ljszGI",
       authDomain: "bitel-247cf.firebaseapp.com",
@@ -210,25 +125,30 @@
       messagingSenderId: "773176941580",
       appId: "1:773176941580:web:4c219da54d05f14f4b6229"
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     const form = document.getElementById('formProducto');
     const msg = document.getElementById('msg');
     const tbody = document.getElementById('tbody');
-
     let editandoId = null;
 
     // Registrar o actualizar producto
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      const stockValue = form.stock.value;
+      if (isNaN(stockValue) || stockValue.trim() === '' || Number(stockValue) < 0) {
+        msg.textContent = '❌ El stock debe ser un número válido';
+        msg.style.color = 'red';
+        return;
+      }
+
       const producto = {
         cod_producto: form.cod_producto.value,
         nombre: form.Marca.value,
         descripcion: form.Descripción.value,
-        stock: form.stock.value, // ahora texto libre
+        stock: Number(stockValue),
         cod_inventario: form.cod_inventario.value
       };
 
@@ -236,17 +156,19 @@
         if (editandoId) {
           await updateDoc(doc(db, 'productos', editandoId), producto);
           msg.textContent = '✅ Producto actualizado';
+          msg.style.color = '#28a745';
           editandoId = null;
         } else {
           await addDoc(collection(db, 'productos'), producto);
           msg.textContent = '✅ Producto registrado';
+          msg.style.color = '#28a745';
         }
         form.reset();
       } catch (error) {
         msg.textContent = '❌ Error al guardar';
+        msg.style.color = 'red';
         console.error(error);
       }
-
       setTimeout(() => msg.textContent = '', 2000);
     });
 
@@ -261,7 +183,11 @@
             <td><input value="${data.cod_producto || ''}" data-field="cod_producto" data-id="${docu.id}" /></td>
             <td><input value="${data.nombre || ''}" data-field="nombre" data-id="${docu.id}" /></td>
             <td><input value="${data.descripcion || ''}" data-field="descripcion" data-id="${docu.id}" /></td>
-            <td><input value="${data.stock || ''}" data-field="stock" data-id="${docu.id}" type="text" /></td>
+            <td>
+              ${Number(data.stock) === 0
+                ? '<span class="agotado">Agotado</span>'
+                : `<input type="number" min="0" value="${data.stock || 0}" data-field="stock" data-id="${docu.id}" />`}
+            </td>
             <td><input value="${data.cod_inventario || ''}" data-field="cod_inventario" data-id="${docu.id}" /></td>
             <td>
               <button class="btn save" data-id="${docu.id}">💾</button>
@@ -276,6 +202,7 @@
           btn.addEventListener('click', async () => {
             await deleteDoc(doc(db, 'productos', btn.dataset.id));
             msg.textContent = '🗑️ Producto eliminado';
+            msg.style.color = '#28a745';
             setTimeout(() => msg.textContent = '', 2000);
           });
         });
@@ -286,34 +213,42 @@
             const id = btn.dataset.id;
             const inputs = document.querySelectorAll(`input[data-id="${id}"]`);
             const nuevoProducto = {};
+            let valido = true;
+
             inputs.forEach(input => {
-              nuevoProducto[input.dataset.field] = input.value;
+              if (input.dataset.field === 'stock') {
+                if (isNaN(input.value) || input.value.trim() === '' || Number(input.value) < 0) {
+                  msg.textContent = '❌ El stock debe ser un número válido';
+                  msg.style.color = 'red';
+                  valido = false;
+                }
+                nuevoProducto[input.dataset.field] = Number(input.value);
+              } else {
+                nuevoProducto[input.dataset.field] = input.value;
+              }
             });
+
+            if (!valido) return;
+
             await updateDoc(doc(db, 'productos', id), nuevoProducto);
             msg.textContent = '✅ Producto actualizado';
+            msg.style.color = '#28a745';
             setTimeout(() => msg.textContent = '', 2000);
           });
         });
       });
     }
-
     listarProductos();
 
     // Filtro de búsqueda
     document.getElementById('buscar').addEventListener('input', function () {
       const filtro = this.value.toLowerCase();
       const filas = document.querySelectorAll('#tbody tr');
-
       filas.forEach(fila => {
-        const codigo = fila.cells[0].querySelector('input').value.toLowerCase();
-        const marca = fila.cells[1].querySelector('input').value.toLowerCase();
-        const descripcion = fila.cells[2].querySelector('input').value.toLowerCase();
-
-        if (
-          codigo.includes(filtro) ||
-          marca.includes(filtro) ||
-          descripcion.includes(filtro)
-        ) {
+        const codigo = fila.cells[0].querySelector('input')?.value.toLowerCase() || '';
+        const marca = fila.cells[1].querySelector('input')?.value.toLowerCase() || '';
+        const descripcion = fila.cells[2].querySelector('input')?.value.toLowerCase() || '';
+        if (codigo.includes(filtro) || marca.includes(filtro) || descripcion.includes(filtro)) {
           fila.style.display = '';
         } else {
           fila.style.display = 'none';
@@ -323,4 +258,3 @@
   </script>
 </body>
 </html>
-
