@@ -80,6 +80,7 @@
       getFirestore, collection, query, where, getDocs, updateDoc, addDoc, doc
     } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
+    // Config Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBMHH7tdFm5EpZazWSe604_05UH_ljszGI",
       authDomain: "bitel-247cf.firebaseapp.com",
@@ -100,11 +101,13 @@
 
     let productoEncontrado = null;
 
+    // Buscar producto al escribir código
     codigoProducto.addEventListener('input', async () => {
       const codigo = codigoProducto.value.trim();
       if (codigo === "") {
         datosProducto.style.display = "none";
         productoEncontrado = null;
+        btnSalida.disabled = false;
         return;
       }
 
@@ -124,15 +127,22 @@
           <strong>Marca:</strong> ${productoEncontrado.nombre} <br>
           <strong>Descripción:</strong> ${productoEncontrado.descripcion} <br>
           <strong>Stock actual:</strong> ${stockTexto} <br>
+          <strong>Código:</strong> ${productoEncontrado.cod_producto} <br>
           <strong>Ubicación:</strong> ${productoEncontrado.cod_inventario}
         `;
+
+        // Deshabilitar si stock 0
+        btnSalida.disabled = productoEncontrado.stock === 0;
+
       } else {
         datosProducto.style.display = "block";
         datosProducto.innerHTML = `<span style="color:red">❌ Producto no encontrado</span>`;
         productoEncontrado = null;
+        btnSalida.disabled = true;
       }
     });
 
+    // Registrar salida
     btnSalida.addEventListener('click', async () => {
       if (!productoEncontrado) {
         msg.style.color = 'red';
@@ -157,10 +167,12 @@
       try {
         const nuevoStock = stockActual - cantidad;
 
+        // Actualizar stock
         await updateDoc(doc(db, 'productos', productoEncontrado.id), {
           stock: nuevoStock
         });
 
+        // Registrar salida en historial
         await addDoc(collection(db, 'salidas'), {
           cod_producto: productoEncontrado.cod_producto,
           nombre: productoEncontrado.nombre,
@@ -169,15 +181,18 @@
         });
 
         msg.style.color = 'green';
-        msg.textContent = nuevoStock === 0 
-          ? '✅ Salida registrada. Producto AGOTADO'
-          : '✅ Salida registrada y stock actualizado';
+        msg.textContent = '✅ Salida registrada y stock actualizado';
+
+        // Mostrar alerta si se agotó
+        if (nuevoStock === 0) {
+          alert(`⚠️ El producto "${productoEncontrado.nombre}" se ha AGOTADO.`);
+        }
 
         cantidadSalida.value = '';
         codigoProducto.value = '';
-        datosProducto.innerHTML = '';
         datosProducto.style.display = 'none';
         productoEncontrado = null;
+        btnSalida.disabled = false;
       } catch (err) {
         console.error(err);
         msg.style.color = 'red';
