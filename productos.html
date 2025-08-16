@@ -24,6 +24,9 @@
       position: relative;
       display: flex;
       flex-direction: column;
+      /* Scroll interno */
+      max-height: 90vh;
+      overflow-y: auto;
     }
     .back-btn {
       position: absolute;
@@ -116,7 +119,6 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
     import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
-    // Config Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBMHH7tdFm5EpZazWSe604_05UH_ljszGI",
       authDomain: "bitel-247cf.firebaseapp.com",
@@ -133,7 +135,6 @@
     const tbody = document.getElementById('tbody');
     let editandoId = null;
 
-    // Registrar o actualizar producto
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -172,7 +173,6 @@
       setTimeout(() => msg.textContent = '', 2000);
     });
 
-    // Mostrar productos en la tabla
     function listarProductos() {
       onSnapshot(collection(db, 'productos'), (snapshot) => {
         tbody.innerHTML = '';
@@ -197,7 +197,6 @@
           tbody.appendChild(tr);
         });
 
-        // Botón Eliminar
         document.querySelectorAll('.delete').forEach(btn => {
           btn.addEventListener('click', async () => {
             await deleteDoc(doc(db, 'productos', btn.dataset.id));
@@ -207,7 +206,6 @@
           });
         });
 
-        // Botón Guardar
         document.querySelectorAll('.save').forEach(btn => {
           btn.addEventListener('click', async () => {
             const id = btn.dataset.id;
@@ -240,7 +238,6 @@
     }
     listarProductos();
 
-    // Filtro de búsqueda
     document.getElementById('buscar').addEventListener('input', function () {
       const filtro = this.value.toLowerCase();
       const filas = document.querySelectorAll('#tbody tr');
