@@ -27,7 +27,7 @@
       margin-bottom: 20px;
       color: #c82333;
     }
-    input, button {
+    input, button, select {
       width: 100%;
       padding: 10px;
       margin: 8px 0;
@@ -68,7 +68,12 @@
     <h1>Salida de Productos</h1>
 
     <input type="text" id="codigoProducto" placeholder="Código del producto" required />
+    
+    <!-- Selector de coincidencias -->
+    <select id="selectorProducto" style="display:none; margin-top:10px;"></select>
+    
     <div id="datosProducto"></div>
+    
     <input type="number" id="cantidadSalida" placeholder="Cantidad a descontar" min="1" required />
     <button id="btnSalida">Registrar Salida</button>
     <div id="msg"></div>
@@ -80,7 +85,6 @@
       getFirestore, collection, query, where, getDocs, updateDoc, addDoc, doc
     } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
-    // Config Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBMHH7tdFm5EpZazWSe604_05UH_ljszGI",
       authDomain: "bitel-247cf.firebaseapp.com",
@@ -94,64 +98,89 @@
     const db = getFirestore(app);
 
     const codigoProducto = document.getElementById('codigoProducto');
+    const selectorProducto = document.getElementById('selectorProducto');
     const datosProducto = document.getElementById('datosProducto');
     const cantidadSalida = document.getElementById('cantidadSalida');
     const btnSalida = document.getElementById('btnSalida');
     const msg = document.getElementById('msg');
 
-    let productoEncontrado = null;
+    let listaProductos = [];
+    let productoSeleccionado = null;
 
-    // Buscar producto al escribir código
+    // Buscar productos al escribir código
     codigoProducto.addEventListener('input', async () => {
       const codigo = codigoProducto.value.trim();
-      if (codigo === "") {
-        datosProducto.style.display = "none";
-        productoEncontrado = null;
-        btnSalida.disabled = false;
-        return;
-      }
+      selectorProducto.innerHTML = "";
+      selectorProducto.style.display = "none";
+      datosProducto.style.display = "none";
+      productoSeleccionado = null;
+      listaProductos = [];
+
+      if (codigo === "") return;
 
       const q = query(collection(db, 'productos'), where('cod_producto', '==', codigo));
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        const docu = querySnapshot.docs[0];
-        productoEncontrado = { id: docu.id, ...docu.data() };
+        listaProductos = querySnapshot.docs.map(docu => ({
+          id: docu.id,
+          ...docu.data()
+        }));
 
-        let stockTexto = productoEncontrado.stock === 0 
-          ? `<span class="agotado">AGOTADO</span>` 
-          : productoEncontrado.stock;
-
-        datosProducto.style.display = "block";
-        datosProducto.innerHTML = `
-          <strong>Marca:</strong> ${productoEncontrado.nombre} <br>
-          <strong>Descripción:</strong> ${productoEncontrado.descripcion} <br>
-          <strong>Stock actual:</strong> ${stockTexto} <br>
-          <strong>Código:</strong> ${productoEncontrado.cod_producto} <br>
-          <strong>Ubicación:</strong> ${productoEncontrado.cod_inventario}
-        `;
-
-        // Deshabilitar si stock 0
-        btnSalida.disabled = productoEncontrado.stock === 0;
-
+        if (listaProductos.length > 1) {
+          selectorProducto.style.display = "block";
+          selectorProducto.innerHTML = `<option value="">Selecciona el producto</option>`;
+          listaProductos.forEach((p, i) => {
+            selectorProducto.innerHTML += `<option value="${i}">${p.cod_producto} | ${p.nombre} - ${p.descripcion} | ${p.cod_inventario} (Stock: ${p.stock})</option>`;
+          });
+        } else {
+          mostrarProducto(listaProductos[0]);
+        }
       } else {
         datosProducto.style.display = "block";
         datosProducto.innerHTML = `<span style="color:red">❌ Producto no encontrado</span>`;
-        productoEncontrado = null;
-        btnSalida.disabled = true;
       }
     });
 
+    // Cuando el usuario selecciona uno de la lista
+    selectorProducto.addEventListener('change', () => {
+      const index = selectorProducto.value;
+      if (index !== "") {
+        mostrarProducto(listaProductos[index]);
+      } else {
+        datosProducto.style.display = "none";
+        productoSeleccionado = null;
+      }
+    });
+
+    function mostrarProducto(producto) {
+      productoSeleccionado = producto;
+      let stockTexto = producto.stock === 0 
+        ? `<span class="agotado">AGOTADO</span>` 
+        : producto.stock;
+
+      datosProducto.style.display = "block";
+      datosProducto.innerHTML = `
+        <strong>Marca:</strong> ${producto.nombre} <br>
+        <strong>Descripción:</strong> ${producto.descripcion} <br>
+        <strong>Stock actual:</strong> ${stockTexto} <br>
+        <strong>Código:</strong> ${producto.cod_producto} <br>
+        <strong>Ubicación:</strong> ${producto.cod_inventario}
+      `;
+
+      btnSalida.disabled = producto.stock === 0;
+    }
+
     // Registrar salida
     btnSalida.addEventListener('click', async () => {
-      if (!productoEncontrado) {
+      if (!productoSeleccionado) {
         msg.style.color = 'red';
-        msg.textContent = '⚠️ Ingresa un código válido';
+        msg.textContent = '⚠️ Selecciona un producto válido';
         return;
       }
 
       const cantidad = parseInt(cantidadSalida.value);
-      const stockActual = parseInt(productoEncontrado.stock);
+      const stockActual = parseInt(productoSeleccionado.stock);
 
       if (isNaN(cantidad) || cantidad <= 0) {
         msg.style.color = 'red';
@@ -167,15 +196,13 @@
       try {
         const nuevoStock = stockActual - cantidad;
 
-        // Actualizar stock
-        await updateDoc(doc(db, 'productos', productoEncontrado.id), {
+        await updateDoc(doc(db, 'productos', productoSeleccionado.id), {
           stock: nuevoStock
         });
 
-        // Registrar salida en historial
         await addDoc(collection(db, 'salidas'), {
-          cod_producto: productoEncontrado.cod_producto,
-          nombre: productoEncontrado.nombre,
+          cod_producto: productoSeleccionado.cod_producto,
+          nombre: productoSeleccionado.nombre,
           cantidad: cantidad,
           fecha: new Date().toISOString()
         });
@@ -183,16 +210,15 @@
         msg.style.color = 'green';
         msg.textContent = '✅ Salida registrada y stock actualizado';
 
-        // Mostrar alerta si se agotó
         if (nuevoStock === 0) {
-          alert(`⚠️ El producto "${productoEncontrado.nombre}" se ha AGOTADO.`);
+          alert(`⚠️ El producto "${productoSeleccionado.nombre}" se ha AGOTADO.`);
         }
 
         cantidadSalida.value = '';
         codigoProducto.value = '';
+        selectorProducto.style.display = "none";
         datosProducto.style.display = 'none';
-        productoEncontrado = null;
-        btnSalida.disabled = false;
+        productoSeleccionado = null;
       } catch (err) {
         console.error(err);
         msg.style.color = 'red';
